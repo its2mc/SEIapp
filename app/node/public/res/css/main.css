@@ -1,0 +1,40 @@
+@CHARSET "UTF-8";
+
+
+/* 
+* General css code.
+*/
+
+footer{
+	background-color:#eee;
+	margin-top:35px;
+}
+.footer{
+	width:83%;
+	margin:auto;
+}
+
+.mainBox{
+	margin:auto;
+}
+
+/* 
+* Login page css code.
+*/
+
+.loginBox{
+	width: 200px;
+	margin:auto;
+}
+
+/* 
+* Control panel page css code
+*/
+
+/* 
+* Device Status page css code.
+*/
+
+/* 
+* Statistics page css code.
+*/
