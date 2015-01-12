@@ -12,6 +12,7 @@ Installation Procedure
 ----------------------
 * Make sure that the files setup.sh, sqlSetup.sql and the folder app, and all its context are saved in the root home folder.
 * run the following command from the root folder "sudo bash setup.sh" and follow the instructions 
-* After set up successfully finishes with all components installed, then enter the folder "app" and run the command "sudo bash run.sh"
+* After set up successfully finishes with all components installed, then enter the folder "app" and run the command "sudo bash run_beagle.sh" for 
+the beagle bone and "sudo bash run_rpi.sh" for the raspberry pi.
 	
 	
