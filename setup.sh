@@ -53,7 +53,7 @@ echo "--setting up application environment--"
 cd SEIapp
 
 echo
-echo "--running sql script that installs the table--"
+echo "--setting up mysql environment--"
 sudo mysql installScript.sql
 
 echo
