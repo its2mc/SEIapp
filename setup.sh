@@ -55,6 +55,7 @@ cd SEIapp
 echo
 echo "--setting up mysql environment--"
 echo "--Please input the root password you included during sql setup--"
+echo "--If the sql script is successful you will see seidb in the database list at the end--"
 sudo mysql -h localhost -u root -p < sqlSetup.sql
 
 echo
