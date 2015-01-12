@@ -22,7 +22,7 @@ sudo apt-get install –y g    libtool
 echo
 echo "--installing mysql--"
 echo "--You will be asked if you want to continue with the installation, enter y and press enter--"
-echo "--A screen will appear asking you to set 'New password for the MySQL 'root' user', enter a password, then confirm it.--"
+echo "--A screen will appear asking you to set 'New password for the MySQL 'root' user', enter a password, then confirm it. (Do not forget it)--"
 sudo apt-get install mysql-server mysql-client php5-mysql
 
 echo
@@ -54,7 +54,8 @@ cd SEIapp
 
 echo
 echo "--setting up mysql environment--"
-sudo mysql installScript.sql
+echo "--Please input the root password you included during sql setup--"
+sudo mysql sqlSetup.sql -u root
 
 echo
 echo "--setting up nodejs environment--"
