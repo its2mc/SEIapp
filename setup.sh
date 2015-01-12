@@ -55,7 +55,7 @@ cd SEIapp
 echo
 echo "--setting up mysql environment--"
 echo "--Please input the root password you included during sql setup--"
-sudo mysql sqlSetup.sql -u root
+sudo mysql -h localhost -u root -p < sqlSetup.sql
 
 echo
 echo "--setting up nodejs environment--"
