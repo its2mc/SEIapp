@@ -41,9 +41,6 @@ LED_PINS = {'status': "P8_9", 'error':"P8_10", 'process':"P8_11"}
 
 
 #Prepare environment
-#--setup gpio mode--#
-gpio.setmode(gpio.BOARD)  # use P1 header pin numbering convention
-gpio.setwarnings(False)   # don't want to hear about how pins are already in use
 #--assign switch pins functions--#
 for powerSource, boardPin in CIRCUIT_ONE.iteritems():
     gpio.setup(boardPin,gpio.OUT)
