@@ -18,6 +18,7 @@
 import threading
 import time
 import Adafruit_BBIO.GPIO as gpio
+import Adafruit_BBIO.ADC as adc
 import json
 #--mysql--#
 import pymysql
@@ -30,25 +31,25 @@ from pymysql import NULL
 
 
 #Declare constants
+MAX_ANALOGUE_VAL = 1.6
+MAX_CURRENT_VAL = 10
 SOCKET_ADDR = "tcp://localhost:6665"
 #--switch pin mapping, each number represents the power source--#
 CIRCUIT_ONE = {'1': "P8_2", '2':"P8_4", '3':"P8_5"}
 CIRCUIT_TWO = {'1': "P8_6", '2':"P8_7", '3':"P8_8"}
 #--sensor pin mapping--#
-SENSOR_PINS = {'1': 0, '2':0, '3':0, '4':0, '5':0, '6':0, '7':0, '8':0}
+SENSOR_PINS = {'1': "P9_40", '2':"P9_39", '3':"P9_38", '4':"P9_37"}
 #--led pin mapping--#
 LED_PINS = {'status': "P8_9", 'error':"P8_10", 'process':"P8_11"}
 
 
 #Prepare environment
+adc.setup()
 #--assign switch pins functions--#
 for powerSource, boardPin in CIRCUIT_ONE.iteritems():
     gpio.setup(boardPin,gpio.OUT)
 for powerSource, boardPin in CIRCUIT_TWO.iteritems():
     gpio.setup(boardPin,gpio.OUT)
-#--assign sensor pins functions--# not included yet
-#for sensor, boardPin in SENSOR_PINS.iteritems():
-#    gpio.setup(boardPin,gpio.IN)
 #--assign led pins functions--# not included yet
 for led, boardPin in LED_PINS.iteritems():
     gpio.setup(boardPin,gpio.OUT)
@@ -131,14 +132,23 @@ def readSensors():
     sensorId = NULL
     data = NULL
     timestamp = NULL
+    
     logger.info('Starting sensor loop')
-    for i in range(2000):
+    for sensor, boardPin in SENSOR_PINS.iteritems():
 #-read gpio sensors--#
-        print('Reading sensors')
-#--format gpio pin readings to numbers--#
-
-#--prepare for database entries--#
-        cur.execute("INSERT INTO sensorData (id,sensorID,data,timestamp) values (%s,%s,%s,%s)",(id,sensorId,data,timestamp))    
+        print('Reading sensor '+sensor)
+        logger.info('Reading sensor '+sensor)
+        sensorId = sensor
+        #--assign sensor pins functions--# not included yet
+        for i in range(500):
+            gpio.setup(boardPin,gpio.IN)
+            #--prepare for database entries--#
+            timestamp = time.time()
+            #--format gpio pin readings--#
+            data = adc.read(boardPin) * 1.8 * (MAX_CURRENT_VAL/MAX_ANALOGUE_VAL)
+            #--execute query--#
+            cur.execute("INSERT INTO sensorData (id,sensorID,data,timestamp) values (%s,%s,%s,%s)",(id,sensorId,data,timestamp))
+           
 #--closing connection and cursor--#        
     processLED()
     logger.info('Cleaning up cursor and mysql connection')
