@@ -228,11 +228,11 @@ class commsThread(threading.Thread):
 #Run the main thread
 try:
     statusLED()
-#    threadA = sensorThread()
+    threadA = sensorThread()
     threadB = commsThread()
-#    logger.info('Starting sensor thread')
-#    print("Started Sensor Thread.")
-#    threadA.start()
+    logger.info('Starting sensor thread')
+    print("Started Sensor Thread.")
+    threadA.start()
     logger.info('Starting command thread')
     threadB.start()
     print ("Started Communications Thread.")
