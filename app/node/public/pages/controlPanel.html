@@ -13,7 +13,7 @@
 
 <!-- Main Tools  -->
 <script>
-var wsUri = "ws://192.168.0.4:5678";
+var wsUri = "ws://192.168.7.2:5678";
 var websocket = new WebSocket(wsUri);
 
 //This part handles the websocket Connection
@@ -32,16 +32,21 @@ websocket.onmessage = function(evt) {
 <link href="../res/css/main.css" rel="stylesheet">
 <script src="../res/js/main.js"></script>
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>SmartEnergyIntegrator Dashboard</title>
 </head>
 <body>
-	<nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="index.html">Smart Energy Integrator Dashboard</a>
-            </div>
-            <!-- /.navbar-header -->
-    </nav>
+
 	<div class="container">
+		<nav class="navbar navbar-default navbar-static-top" role="navigation"
+			style="margin-bottom: 0">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="index.html">Smart Energy
+					Integrator Dashboard</a>
+			</div>
+			<!-- /.navbar-header -->
+		</nav>
 		<div class="mainBox">
 			<div class="col-lg-12">
 				<div class="panel panel-default">
@@ -64,12 +69,12 @@ websocket.onmessage = function(evt) {
 										<td><select id="circuitNo" class="form-control">
 												<option>1</option>
 												<option>2</option>
+												<option>3</option>
 										</select></td>
 										<td class="center">-------------------------</td>
 										<td><select id="sourceNo" class="form-control">
 												<option>1</option>
 												<option>2</option>
-												<option>3</option>
 										</select></td>
 										<td class="center"><button type="button"
 												class="btn btn-primary" id="switchBtn">Switch</button></td>

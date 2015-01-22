@@ -33,14 +33,15 @@ from pymysql import NULL
 #Declare constants
 MAX_ANALOGUE_VAL = 1.6
 MAX_CURRENT_VAL = 10
-SOCKET_ADDR = "tcp://localhost:6665"
+SOCKET_ADDR = "tcp://*:9992"
 #--switch pin mapping, each number represents the power source--#
-CIRCUIT_ONE = {'1': "P8_2", '2':"P8_4", '3':"P8_5"}
-CIRCUIT_TWO = {'1': "P8_6", '2':"P8_7", '3':"P8_8"}
+CIRCUIT_ONE = {'1': "P8_2", '2':"P8_4"}
+CIRCUIT_TWO = {'1': "P8_6", '2':"P8_7"}
+CIRCUIT_THREE =  {'1': "P8_8", '2':"P8_9"}
 #--sensor pin mapping--#
 SENSOR_PINS = {'1': "P9_40", '2':"P9_39", '3':"P9_38", '4':"P9_37"}
 #--led pin mapping--#
-LED_PINS = {'status': "P8_9", 'error':"P8_10", 'process':"P8_11"}
+LED_PINS = {'status': "P8_10", 'error':"P8_11", 'process':"P8_12"}
 
 
 #Prepare environment
@@ -118,7 +119,19 @@ def switchCircuit(circuitNo,sourceNo):
             else:
                 gpio.output(boardPin,gpio.LOW)
         return 1
-    
+    elif(circuitNo == '3'):
+        logger.info('Resetting gpio outputs for circuit 2 to 0V')
+        for powerSource, boardPin in CIRCUIT_TWO.iteritems():
+            gpio.output(boardPin,gpio.LOW)
+#--time for the gpio pins to settle--#
+        time.sleep(1)
+        logger.info('Setting Circuit 2 to power source '+sourceNo)
+        for powerSource, boardPin in CIRCUIT_TWO.iteritems():
+            if(powerSource == sourceNo):
+                gpio.output(boardPin,gpio.HIGH)
+            else:
+                gpio.output(boardPin,gpio.LOW)
+        return 1
     
 #Read Sensor data method, reads sensor info and sends to server ... this is not included for now
 def readSensors():

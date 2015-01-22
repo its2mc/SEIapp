@@ -23,7 +23,7 @@ status updates from the device. The app is designed to be non-Blocking.
 //Importing all the modules
 var express = require('express'),
     path = require('path'),
-    httpPort = 80,
+    httpPort = 8080,
 	wsPort = 5678,
 //	mysql = require('mysql'),
 //	squel = require('squel'),
@@ -33,7 +33,7 @@ var express = require('express'),
 	app = express();
 	
 //Declare variables and the environment
-var ZMQ_REQ_ADDR = "tcp://*:6665";
+var ZMQ_REQ_ADDR = "tcp://*:9992";
 
 //This sets up the express environment, public is the folder containing the files
 express.static.mime.default_type = "text/html";
