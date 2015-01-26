@@ -22,7 +22,6 @@ import Adafruit_BBIO.ADC as adc
 import json
 #--mysql--#
 import pymysql
-##import random
 #--logger--#
 import logging
 #--Zero MQ python library--#
@@ -33,13 +32,13 @@ from pymysql import NULL
 #Declare constants
 MAX_ANALOGUE_VAL = 1.6
 MAX_CURRENT_VAL = 10
-SOCKET_ADDR = "tcp://*:9992"
+SOCKET_ADDR = "tcp://localhost:9992"
 #--switch pin mapping, each number represents the power source--#
-CIRCUIT_ONE = {'1': "P8_2", '2':"P8_4"}
-CIRCUIT_TWO = {'1': "P8_6", '2':"P8_7"}
-CIRCUIT_THREE =  {'1': "P8_8", '2':"P8_9"}
+CIRCUIT_ONE = {'1': "P8_7", '2':"P8_8"}
+CIRCUIT_TWO = {'1': "P8_9", '2':"P8_10"}
+CIRCUIT_THREE =  {'1': "P8_13", '2':"P8_12"}
 #--sensor pin mapping--#
-SENSOR_PINS = {'1': "P9_40", '2':"P9_39", '3':"P9_38", '4':"P9_37"}
+SENSOR_PINS = {'1': "P9_39", '2':"P9_40"}
 #--led pin mapping--#
 LED_PINS = {'status': "P8_10", 'error':"P8_11", 'process':"P8_12"}
 
@@ -49,13 +48,19 @@ adc.setup()
 #--assign switch pins functions--#
 for powerSource, boardPin in CIRCUIT_ONE.iteritems():
     gpio.setup(boardPin,gpio.OUT)
+    gpio.output(boardPin,gpio.HIGH)
 for powerSource, boardPin in CIRCUIT_TWO.iteritems():
     gpio.setup(boardPin,gpio.OUT)
+    gpio.output(boardPin,gpio.HIGH)
+for powerSource, boardPin in CIRCUIT_THREE.iteritems():
+    gpio.setup(boardPin,gpio.OUT)
+    gpio.output(boardPin,gpio.HIGH)
 #--assign led pins functions--# not included yet
 for led, boardPin in LED_PINS.iteritems():
     gpio.setup(boardPin,gpio.OUT)
 #--setup declaration--#
-
+for sensor, boardPin in SENSOR_PINS.iteritems():
+    gpio.setup(boardPin,gpio.IN)
 
 
 #Prepare Logger (File Logger and Console Error Logger)
@@ -76,11 +81,11 @@ logger.info('Application starting. Logging Enabled.')
 #Status LED class.. i.e. error led, status led, process led
 def processLED():
     gpio.output(LED_PINS["process"],gpio.HIGH)
-    time.sleep(0.5)
+    time.sleep(0.1)
     gpio.output(LED_PINS["process"],gpio.LOW)
-    time.sleep(0.5)
+    time.sleep(0.1)
     gpio.output(LED_PINS["process"],gpio.HIGH)
-    time.sleep(0.5)
+    time.sleep(0.1)
     gpio.output(LED_PINS["process"],gpio.LOW)
     
 def errorLED():
@@ -96,41 +101,41 @@ def switchCircuit(circuitNo,sourceNo):
     if(circuitNo == '1'):
         logger.info('Resetting gpio outputs for circuit 1 to 0V')
         for powerSource, boardPin in CIRCUIT_ONE.iteritems():
-            gpio.output(boardPin,gpio.LOW)
+            gpio.output(boardPin,gpio.HIGH)
 #--time for the gpio pins to settle--#
         time.sleep(1)
         logger.info('Setting Circuit 1 to power source '+sourceNo)
         for powerSource, boardPin in CIRCUIT_ONE.iteritems():
             if(powerSource == sourceNo):
-                gpio.output(boardPin,gpio.HIGH)
-            else:
                 gpio.output(boardPin,gpio.LOW)
+            else:
+                gpio.output(boardPin,gpio.HIGH)
         return 1
     elif(circuitNo == '2'):
         logger.info('Resetting gpio outputs for circuit 2 to 0V')
         for powerSource, boardPin in CIRCUIT_TWO.iteritems():
-            gpio.output(boardPin,gpio.LOW)
+            gpio.output(boardPin,gpio.HIGH)
 #--time for the gpio pins to settle--#
         time.sleep(1)
         logger.info('Setting Circuit 2 to power source '+sourceNo)
         for powerSource, boardPin in CIRCUIT_TWO.iteritems():
             if(powerSource == sourceNo):
-                gpio.output(boardPin,gpio.HIGH)
-            else:
                 gpio.output(boardPin,gpio.LOW)
+            else:
+                gpio.output(boardPin,gpio.HIGH)
         return 1
     elif(circuitNo == '3'):
-        logger.info('Resetting gpio outputs for circuit 2 to 0V')
+        logger.info('Resetting gpio outputs for circuit 3 to 0V')
         for powerSource, boardPin in CIRCUIT_TWO.iteritems():
-            gpio.output(boardPin,gpio.LOW)
+            gpio.output(boardPin,gpio.HIGH)
 #--time for the gpio pins to settle--#
         time.sleep(1)
-        logger.info('Setting Circuit 2 to power source '+sourceNo)
+        logger.info('Setting Circuit 3 to power source '+sourceNo)
         for powerSource, boardPin in CIRCUIT_TWO.iteritems():
             if(powerSource == sourceNo):
-                gpio.output(boardPin,gpio.HIGH)
-            else:
                 gpio.output(boardPin,gpio.LOW)
+            else:
+                gpio.output(boardPin,gpio.HIGH)
         return 1
     
 #Read Sensor data method, reads sensor info and sends to server ... this is not included for now
@@ -149,12 +154,10 @@ def readSensors():
     logger.info('Starting sensor loop')
     for sensor, boardPin in SENSOR_PINS.iteritems():
 #-read gpio sensors--#
-        print('Reading sensor '+sensor)
         logger.info('Reading sensor '+sensor)
         sensorId = sensor
         #--assign sensor pins functions--# not included yet
         for i in range(500):
-            gpio.setup(boardPin,gpio.IN)
             #--prepare for database entries--#
             timestamp = time.time()
             #--format gpio pin readings--#
@@ -182,7 +185,7 @@ class messenger():
 #--internal switching function--#
     def switch(self):
         processLED()
-        logger.info('Attempting to Switch circuit'+self.temp["circuitNo"]+' to source '+self.temp["sourceNo"])
+        logger.info('Attempting to Switch circuit '+self.temp["circuitNo"]+' to source '+self.temp["sourceNo"])
         if(switchCircuit(self.temp["circuitNo"],self.temp["sourceNo"])==1):
             return {"msg": "Switch successful"}
         else:
@@ -211,7 +214,7 @@ class sensorThread(threading.Thread):
         processLED()
         logger.info('Sensor thread started')
         while True: 
-            time.sleep(3000)
+            time.sleep(1800)
             readSensors()
 
 
@@ -233,7 +236,6 @@ class commsThread(threading.Thread):
         # Process tasks forever
         while True:
             msg = conn.recv()
-            print msg
             logger.info('Message recieved:'+msg)
             conn.send_json(self.messenger.processCmd(msg,conn),0)
                 
@@ -244,18 +246,17 @@ try:
     threadA = sensorThread()
     threadB = commsThread()
     logger.info('Starting sensor thread')
-    print("Started Sensor Thread.")
     threadA.start()
     logger.info('Starting command thread')
     threadB.start()
-    print ("Started Communications Thread.")
 except Exception, e:
     for powerSource, boardPin in CIRCUIT_ONE.iteritems():
-        gpio.output(boardPin,gpio.LOW)
+        gpio.output( boardPin, gpio.HIGH)
     for powerSource, boardPin in CIRCUIT_TWO.iteritems():
-        gpio.output(boardPin,gpio.LOW)
+        gpio.output(boardPin, gpio.HIGH)
+    for powerSource, boardPin in CIRCUIT_THREE.iteritems():
+        gpio.output( boardPin, gpio.HIGH)
     errorLED()
-    print(str(e))
     logger.error(str(e))
     
 

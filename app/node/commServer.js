@@ -57,16 +57,16 @@ var wss = new wsServer({
     });
 
 wss.on('connection', function (ws) {
-	console.log("WS Server: ws://192.168.0.4:"+ wsPort);
+	console.log("WS Server: ws://localhost:"+ wsPort);
     ws.on('message', function (message) {
 		console.log(message);
 		conn.send(message);
-		conn.on('message', function(data){
-			for (var i in wss.clients){
-        		wss.clients[i].send(data);
-			}
-		});
     });
+	conn.on('message', function(data){
+		for (var i in wss.clients){
+       		wss.clients[i].send(data);
+		}
+	});
 });
 
 // start http server
