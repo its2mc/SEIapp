@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- JQuery Tools -->
+<script src="../res/jquery/jquery.js"></script>
+
+<!-- Bootstrap Tools  -->
+<link href="../res/bootstrap-3.2.0/css/bootstrap.min.css"
+	rel="stylesheet">
+
+<!-- Main Tools  -->
+<link href="../res/css/main.css" rel="stylesheet">
+<script src="../res/js/main.js"></script>
+
+
+<title>SmartEnergyIntegrator Dashboard</title>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid" style="height: 65px;">
+			<div class="navbar-header">
+				<div class="navbar-brand">
+					<svg xmlns="http://www.w3.org/2000/svg" width="350px" height="40px"
+						fill="blue" viewBox="0 0 350 40">
+					<path
+							d="M38.71 20.07C37.35 13.19 31.28 8 24 8c-5.78 0-10.79 3.28-13.3 8.07C4.69 16.72 0 21.81 0 28c0 6.63 5.37 12 12 12h26c5.52 0 10-4.48 10-10 0-5.28-4.11-9.56-9.29-9.93z" />
+					<text x="58" y="34" fill="black">SEI Dashboard</text>
+					</svg>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<div class="container">
+		<div class="mainBox">
+			<div class="btn-group" role="group" aria-label="..."
+				style="margin-bottom: 20px;">
+				<button type="button" class="btn btn-primary" id="sensorDataBtn">Load
+					Sensor Data</button>
+				<button type="button" class="btn btn-primary" id="deviceLogBtn">Load
+					Device Log</button>
+				<button type="button" class="btn btn-primary" id="serverLogBtn">Load
+					Server Log</button>
+				<button type="button" class="btn btn-primary" id="changeConfigBtn">Change
+					Configuration</button>
+			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 id="title" class="panel-title">Click on Buttons to Load...</h3>
+				</div>
+				<div id="body" class="panel-body">
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<footer>
+		<div class="footer">© iHUB Research Buildlab 2015</div>
+	</footer>
+</body>
+</html>

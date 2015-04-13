@@ -30,17 +30,24 @@ from pymysql import NULL
 
 
 #Declare constants
-MAX_ANALOGUE_VAL = 1.6
-MAX_CURRENT_VAL = 10
+MAX_PIN_VOLTAGE_VAL = 1.49
+MAX_PIN_READING_VAL = 0.9994
+
+MAX_CURRENT_VAL = 30
+MAX_SENSOR_READING_VAL = 1.4
+TRIGGER_CHARGE_LEVEL = 0.8
+
 SOCKET_ADDR = "tcp://localhost:9992"
 #--switch pin mapping, each number represents the power source--#
-CIRCUIT_ONE = {'1': "P8_7", '2':"P8_8"}
-CIRCUIT_TWO = {'1': "P8_9", '2':"P8_10"}
-CIRCUIT_THREE =  {'1': "P8_13", '2':"P8_12"}
+CIRCUIT_ONE = {'1': "P8_14", '2':"P8_11",'3':"P8_8"}
+CIRCUIT_TWO = {'1': "P8_13", '2':"P8_10",'3':"P8_9"}
+CIRCUIT_THREE =  {'1': "P8_12", '2':"P8_7",'3':"P8_15"}
 #--sensor pin mapping--#
-SENSOR_PINS = {'1': "P9_39", '2':"P9_40"}
+SENSOR_PINS = {'1': "P9_39"}
+#--charger pin mappings--#
+CONTROL_PINS = {'grid':"P9_18",'source2':"",'solar':"P8_19",'charge':""}
 #--led pin mapping--#
-LED_PINS = {'status': "P8_10", 'error':"P8_11", 'process':"P8_12"}
+LED_PINS = {'status': "", 'error':"", 'process':""}
 
 
 #Prepare environment
@@ -61,7 +68,11 @@ for led, boardPin in LED_PINS.iteritems():
 #--setup declaration--#
 for sensor, boardPin in SENSOR_PINS.iteritems():
     gpio.setup(boardPin,gpio.IN)
-
+#--setup control pins --#
+gpio.setup(CONTROL_PINS['grid'],gpio.OUT)
+gpio.output(CONTROL_PINS['grid'],gpio.HIGH)
+gpio.setup(CONTROL_PINS['solar'],gpio.OUT)
+gpio.output(CONTROL_PINS['solar'],gpio.HIGH)
 
 #Prepare Logger (File Logger and Console Error Logger)
 #--create logger with 'the SEI app'--#
@@ -77,7 +88,15 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 logger.info('Application starting. Logging Enabled.')
 
-
+#This function will reset the relays to off incase of any error
+def reset():
+    for powerSource, boardPin in CIRCUIT_ONE.iteritems():
+        gpio.output( boardPin, gpio.HIGH)
+    for powerSource, boardPin in CIRCUIT_TWO.iteritems():
+        gpio.output(boardPin, gpio.HIGH)
+    for powerSource, boardPin in CIRCUIT_THREE.iteritems():
+        gpio.output( boardPin, gpio.HIGH)
+    
 #Status LED class.. i.e. error led, status led, process led
 def processLED():
     gpio.output(LED_PINS["process"],gpio.HIGH)
@@ -140,7 +159,7 @@ def switchCircuit(circuitNo,sourceNo):
     
 #Read Sensor data method, reads sensor info and sends to server ... this is not included for now
 def readSensors():
-    processLED()
+#    processLED()
 #--setting up mysql connection parameters--#
     logger.info('Setting up mysql settings')
     conn = pymysql.connect(host='localhost',port=3306,user='seiuser',passwd='r1o2o3t4`',db='seidb')
@@ -157,21 +176,31 @@ def readSensors():
         logger.info('Reading sensor '+sensor)
         sensorId = sensor
         #--assign sensor pins functions--# not included yet
-        for i in range(500):
+        for i in range(100):
             #--prepare for database entries--#
             timestamp = time.time()
             #--format gpio pin readings--#
-            data = adc.read(boardPin) * 1.8 * (MAX_CURRENT_VAL/MAX_ANALOGUE_VAL)
+            data = adc.read(boardPin) * (MAX_PIN_VOLTAGE_VAL/MAX_PIN_READING_VAL) *(MAX_CURRENT_VAL/MAX_SENSOR_READING_VAL)
             #--execute query--#
             cur.execute("INSERT INTO sensorData (id,sensorID,data,timestamp) values (%s,%s,%s,%s)",(id,sensorId,data,timestamp))
            
 #--closing connection and cursor--#        
-    processLED()
+#    processLED()
     logger.info('Cleaning up cursor and mysql connection')
     cur.close()
     conn.close()
 
-
+#Code to check if the charger is 
+def checkCharge():
+#    processLED()
+    logger.info('Checking charge level')
+    charge = adc.read(CONTROL_PINS['sensor'])
+    if (charge< TRIGGER_CHARGE_LEVEL):
+        gpio.output(CONTROL_PINS['charge'],gpio.LOW)
+    else: 
+        gpio.output(CONTROL_PINS['charge'],gpio.HIGH)
+        
+    
 #Messages Class has message handling methods, send/receive/reply
 class messenger():
     
@@ -180,11 +209,12 @@ class messenger():
 #--a dictionary containing the command-function matches--#
         self.options = {
                         "switchCircuit":self.switch,
-                        "stats":self.getStats
+                        "stats":self.getStats,
+                        "reset":reset
                         }
 #--internal switching function--#
     def switch(self):
-        processLED()
+#       processLED()
         logger.info('Attempting to Switch circuit '+self.temp["circuitNo"]+' to source '+self.temp["sourceNo"])
         if(switchCircuit(self.temp["circuitNo"],self.temp["sourceNo"])==1):
             return {"msg": "Switch successful"}
@@ -193,12 +223,12 @@ class messenger():
 
 #--gets statistics on device runtime.. basically checks if the device is running--#
     def getStats(self):
-        processLED()
+#        processLED()
         return {"msg": "ok"}
 
 #--receives commands from the server and processes them--#    
     def processCmd(self,msg,conn):
-        processLED()
+#        processLED()
         logger.info('Processing Command from server')
         self.temp = json.loads(msg)
         self.options[self.temp["command"]]()
@@ -208,14 +238,19 @@ class sensorThread(threading.Thread):
 
     def __init__ (self):
         threading.Thread.__init__(self)
+        self.count = 0
 
 #--sensor thread--#
     def run(self):
-        processLED()
+#        processLED()
         logger.info('Sensor thread started')
         while True: 
-            time.sleep(1800)
+#            self.count += 1
+            time.sleep(600)
+#            time.sleep(450)
+#            checkCharge()
             readSensors()
+#           if(self.count <)
 
 
 class commsThread(threading.Thread):
@@ -226,7 +261,7 @@ class commsThread(threading.Thread):
 
 #--communication thread--#
     def run(self):
-        processLED()
+#        processLED()
         logger.info('Command thread started')
         context = zmq.Context()
         logger.info('connecting to comms Server')
@@ -242,7 +277,7 @@ class commsThread(threading.Thread):
 
 #Run the main thread
 try:
-    statusLED()
+#    statusLED()
     threadA = sensorThread()
     threadB = commsThread()
     logger.info('Starting sensor thread')
@@ -250,13 +285,8 @@ try:
     logger.info('Starting command thread')
     threadB.start()
 except Exception, e:
-    for powerSource, boardPin in CIRCUIT_ONE.iteritems():
-        gpio.output( boardPin, gpio.HIGH)
-    for powerSource, boardPin in CIRCUIT_TWO.iteritems():
-        gpio.output(boardPin, gpio.HIGH)
-    for powerSource, boardPin in CIRCUIT_THREE.iteritems():
-        gpio.output( boardPin, gpio.HIGH)
-    errorLED()
+    reset()
+#    errorLED()
     logger.error(str(e))
     
 
