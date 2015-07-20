@@ -75,6 +75,12 @@ conn.bind(ZMQ_REQ_ADDR,function(err){
 //Eclipse Will handle http get requests here. I can make it more
 //secure but that will happen laterI will push mysql data queries using the url
 
+
+// This will handle whois 
+app.get('/huryu', function (req, res) {
+	res.send("{'id':'000001'}");
+});
+
 // This will send a reset signal to the python code, which will set all switches off
 app.get('/reset', function (req, res) {
 	conn.send("{'command':'reset'}");
